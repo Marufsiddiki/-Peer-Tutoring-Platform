@@ -175,34 +175,45 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   // Persistence with localStorage fallback
   const [users, setUsers] = useState<UserProfile[]>(() => {
     const saved =
+      localStorage.getItem('campustutor_users_v8') ||
       localStorage.getItem('campustutor_users_v7') ||
       localStorage.getItem('campustutor_users_v6') ||
       localStorage.getItem('campustutor_users_v5');
     if (saved) {
       try {
         const parsed: UserProfile[] = JSON.parse(saved);
-        // Ensure standard University batch to level/term mapping & 22 ID format
+        // Ensure standard University batch to level/term mapping, 22 ID format, and id@baust.edu.bd email
         return parsed.map((u) => {
-          if (u.id === 'user-admin') return u;
+          if (u.id === 'user-admin') {
+            return { ...u, email: 'shakil.hasan@baust.edu.bd' };
+          }
 
           // 19 Batch -> Level 3 / Term I
           if (u.id === 'user-maruf' || u.batchNumber === 19 || u.batch?.includes('19')) {
-            return { ...u, levelTerm: 'Level 3 / Term I' };
+            const sid = u.studentId || '0802420205101034';
+            return { ...u, levelTerm: 'Level 3 / Term I', email: `${sid}@baust.edu.bd` };
           }
           // 20 Batch -> Level 2 / Term II
           if (u.id === 'user-tanvir' || u.batchNumber === 20 || u.batch?.includes('20')) {
-            return { ...u, levelTerm: 'Level 2 / Term II' };
+            const sid = u.studentId || '0802520105201025';
+            return { ...u, levelTerm: 'Level 2 / Term II', email: `${sid}@baust.edu.bd` };
           }
           // 21 Batch -> Level 2 / Term I
           if (u.id === 'user-sadia' || u.batchNumber === 21 || u.batch?.includes('21')) {
-            return { ...u, levelTerm: 'Level 2 / Term I' };
+            const sid = u.studentId || '0802520205301045';
+            return { ...u, levelTerm: 'Level 2 / Term I', email: `${sid}@baust.edu.bd` };
           }
           // 22 Batch -> Level 1 / Term II & 080262010....... ID
           if (u.id === 'user-fahim' || u.batchNumber === 22 || u.batch?.includes('22')) {
             const validStudentId = u.studentId?.startsWith('080262010') ? u.studentId : '0802620105101089';
-            return { ...u, levelTerm: 'Level 1 / Term II', studentId: validStudentId };
+            return { ...u, levelTerm: 'Level 1 / Term II', studentId: validStudentId, email: `${validStudentId}@baust.edu.bd` };
           }
-          return u;
+
+          const fallbackSid = u.studentId?.trim() || '0802420205101034';
+          return {
+            ...u,
+            email: u.email?.includes('@baust.edu.bd') ? u.email : `${fallbackSid}@baust.edu.bd`,
+          };
         });
       } catch (err) {
         console.error('Failed to parse saved users', err);
@@ -268,7 +279,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   // Sync to local storage
   useEffect(() => {
-    localStorage.setItem('campustutor_users_v7', JSON.stringify(users));
+    localStorage.setItem('campustutor_users_v8', JSON.stringify(users));
   }, [users]);
 
   useEffect(() => {
@@ -334,8 +345,15 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setActiveTab('dashboard');
   };
 
-  const loginUser = (email: string) => {
-    const found = users.find((u) => u.email.toLowerCase() === email.toLowerCase());
+  const loginUser = (input: string) => {
+    const clean = input.trim().toLowerCase();
+    const found = users.find(
+      (u) =>
+        u.email.toLowerCase() === clean ||
+        u.studentId.toLowerCase() === clean ||
+        u.email.toLowerCase().startsWith(`${clean}@`) ||
+        `${u.studentId}@baust.edu.bd`.toLowerCase() === clean
+    );
     if (found) {
       setCurrentUserId(found.id);
       setAuthModalOpen(false);
@@ -362,11 +380,16 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     const match = formData.batch.match(/\d+/);
     const batchNum = match ? parseInt(match[0], 10) : 22;
     const finalStudentId = formData.studentId?.trim() || generateStudentIdForBatch(formData.batch);
+    const finalEmail = formData.email?.trim()
+      ? formData.email.includes('@')
+        ? formData.email.trim()
+        : `${formData.email.trim()}@baust.edu.bd`
+      : `${finalStudentId}@baust.edu.bd`;
 
     const newUser: UserProfile = {
       id: `user-${Date.now()}`,
       name: formData.name,
-      email: formData.email,
+      email: finalEmail,
       avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=250&q=80',
       role: 'both',
       activeRole: 'learner',
@@ -377,7 +400,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       studentId: finalStudentId,
       bio: formData.bio || 'Eager university student seeking to learn and collaborate with fellow peers.',
       isAdmin: false,
-      institutionalEmailVerified: formData.email.endsWith('.edu') || formData.email.includes('univ'),
+      institutionalEmailVerified: finalEmail.endsWith('@baust.edu.bd') || finalEmail.endsWith('.edu') || finalEmail.includes('univ'),
       studentIdVerification: 'pending',
       strikes: 0,
       accountStatus: 'active',

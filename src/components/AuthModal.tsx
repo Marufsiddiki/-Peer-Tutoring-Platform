@@ -15,7 +15,7 @@ export const AuthModal: React.FC = () => {
   } = useApp();
 
   // Login form state
-  const [loginEmail, setLoginEmail] = useState('maruf.siddiki@cse.univ.edu');
+  const [loginEmail, setLoginEmail] = useState('0802420205101034@baust.edu.bd');
   const [loginPass, setLoginPass] = useState('password123');
 
   // Register form state
@@ -23,8 +23,8 @@ export const AuthModal: React.FC = () => {
   const [regEmail, setRegEmail] = useState('');
   const [regPass, setRegPass] = useState('');
   const [regDept, setRegDept] = useState('Computer Science & Engineering');
-  const [regBatch, setRegBatch] = useState('Batch 22');
-  const [regLevelTerm, setRegLevelTerm] = useState('Level 1 / Term II');
+  const [regBatch, setRegBatch] = useState('');
+  const [regLevelTerm, setRegLevelTerm] = useState('');
   const [regStudentId, setRegStudentId] = useState('');
   const [regBio, setRegBio] = useState('');
 
@@ -44,13 +44,16 @@ export const AuthModal: React.FC = () => {
     e.preventDefault();
     if (!regName.trim() || !regEmail.trim()) return;
 
+    const batchValue = regBatch.trim() || 'Batch 22';
+    const levelTermValue = regLevelTerm.trim() || getDefaultLevelTermForBatch(batchValue);
+
     registerUser({
       name: regName.trim(),
       email: regEmail.trim(),
       department: regDept,
-      batch: regBatch,
-      levelTerm: regLevelTerm,
-      studentId: regStudentId.trim() || generateStudentIdForBatch(regBatch),
+      batch: batchValue,
+      levelTerm: levelTermValue,
+      studentId: regStudentId.trim() || generateStudentIdForBatch(batchValue),
       bio: regBio.trim(),
     });
   };
@@ -144,14 +147,14 @@ export const AuthModal: React.FC = () => {
             <form onSubmit={handleLoginSubmit} className="space-y-4">
               <div>
                 <label className="block font-semibold text-slate-700 mb-1">
-                  Institutional Email (.edu)
+                  BAUST Institutional Email (id@baust.edu.bd)
                 </label>
                 <input
                   type="email"
                   value={loginEmail}
                   onChange={(e) => setLoginEmail(e.target.value)}
-                  className="w-full px-3 py-2 rounded-lg border border-slate-200 bg-white"
-                  placeholder="name@cse.univ.edu"
+                  className="w-full px-3 py-2 rounded-lg border border-slate-200 bg-white font-mono text-xs"
+                  placeholder="0802420205101034@baust.edu.bd"
                   required
                 />
               </div>
@@ -183,8 +186,8 @@ export const AuthModal: React.FC = () => {
                 Log In
               </button>
 
-              <div className="pt-2 text-center text-slate-400 text-[11px]">
-                Demo accounts: <code>maruf.siddiki@cse.univ.edu</code>, <code>ayesha.rahman@cse.univ.edu</code>, <code>shakil.hasan@univ.edu</code> (Admin)
+              <div className="pt-2 text-center text-slate-400 text-[11px] leading-relaxed">
+                Demo accounts: <code className="text-slate-600">0802420205101034@baust.edu.bd</code> (Maruf), <code className="text-slate-600">0802620105101089@baust.edu.bd</code> (Fahim), <code className="text-slate-600">shakil.hasan@baust.edu.bd</code> (Admin)
               </div>
             </form>
           )}
@@ -207,14 +210,14 @@ export const AuthModal: React.FC = () => {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label className="block font-semibold text-slate-700 mb-1">
-                    Institutional Email (.edu)
+                    Institutional Email (id@baust.edu.bd)
                   </label>
                   <input
                     type="email"
-                    placeholder="student@univ.edu"
+                    placeholder="e.g. 0802620105101089@baust.edu.bd"
                     value={regEmail}
                     onChange={(e) => setRegEmail(e.target.value)}
-                    className="w-full px-3 py-2 rounded-lg border border-slate-200 bg-white"
+                    className="w-full px-3 py-2 rounded-lg border border-slate-200 bg-white font-mono text-xs"
                     required
                   />
                 </div>
@@ -253,11 +256,7 @@ export const AuthModal: React.FC = () => {
                   <input
                     type="text"
                     value={regBatch}
-                    onChange={(e) => {
-                      const newBatch = e.target.value;
-                      setRegBatch(newBatch);
-                      setRegLevelTerm(getDefaultLevelTermForBatch(newBatch));
-                    }}
+                    onChange={(e) => setRegBatch(e.target.value)}
                     className="w-full px-3 py-2 rounded-lg border border-slate-200 bg-white"
                     placeholder="e.g. Batch 22"
                     required
@@ -267,35 +266,19 @@ export const AuthModal: React.FC = () => {
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <div className="flex items-center justify-between mb-1">
-                    <label className="block font-semibold text-slate-700">Level / Term</label>
-                    <span className="text-[10px] text-slate-400 font-mono">
-                      {getDefaultLevelTermForBatch(regBatch)}
-                    </span>
-                  </div>
+                  <label className="block font-semibold text-slate-700 mb-1">Level / Term</label>
                   <input
                     type="text"
                     value={regLevelTerm}
                     onChange={(e) => setRegLevelTerm(e.target.value)}
                     className="w-full px-3 py-2 rounded-lg border border-slate-200 bg-white"
-                    placeholder={getDefaultLevelTermForBatch(regBatch)}
+                    placeholder={regBatch ? getDefaultLevelTermForBatch(regBatch) : "e.g. Level 1 / Term II"}
                     required
                   />
                 </div>
 
                 <div>
-                  <div className="flex items-center justify-between mb-1">
-                    <label className="block font-semibold text-slate-700">Student ID Card Number</label>
-                    {isBatch22(regBatch) && (
-                      <button
-                        type="button"
-                        onClick={() => setRegStudentId('0802620105101089')}
-                        className="text-[10px] text-teal-700 hover:text-teal-900 font-semibold underline underline-offset-1"
-                      >
-                        Auto-fill 22 Batch ID
-                      </button>
-                    )}
-                  </div>
+                  <label className="block font-semibold text-slate-700 mb-1">Student ID Card Number</label>
                   <input
                     type="text"
                     value={regStudentId}
@@ -304,16 +287,9 @@ export const AuthModal: React.FC = () => {
                     placeholder={isBatch22(regBatch) ? "e.g. 0802620105101089" : "e.g. 0802420205101034"}
                     required
                   />
-                  {isBatch22(regBatch) ? (
-                    <div className="mt-1 flex items-center gap-1.5 text-[11px] text-teal-800 bg-teal-50 px-2 py-1 rounded border border-teal-200 font-medium">
-                      <span>✓</span>
-                      <span>22 Batch ID starts with <strong className="font-mono">080262010.......</strong></span>
-                    </div>
-                  ) : (
-                    <span className="text-[10px] text-slate-400 mt-1 block">
-                      University 16-digit ID number
-                    </span>
-                  )}
+                  <span className="text-[10px] text-slate-400 mt-1 block">
+                    University 16-digit ID number
+                  </span>
                 </div>
               </div>
 
@@ -346,13 +322,13 @@ export const AuthModal: React.FC = () => {
                     Enter your university email address. We will simulate sending a secure password reset link and verification code.
                   </p>
                   <div>
-                    <label className="block font-semibold text-slate-700 mb-1">Institutional Email</label>
+                    <label className="block font-semibold text-slate-700 mb-1">BAUST Institutional Email (id@baust.edu.bd)</label>
                     <input
                       type="email"
                       value={forgotEmail}
                       onChange={(e) => setForgotEmail(e.target.value)}
-                      placeholder="name@univ.edu"
-                      className="w-full px-3 py-2 rounded-lg border border-slate-200 bg-white"
+                      placeholder="0802420205101034@baust.edu.bd"
+                      className="w-full px-3 py-2 rounded-lg border border-slate-200 bg-white font-mono text-xs"
                       required
                     />
                   </div>

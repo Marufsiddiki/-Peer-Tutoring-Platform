@@ -50,7 +50,7 @@ export const INITIAL_USERS: UserProfile[] = [
   {
     id: 'user-maruf',
     name: 'Maruf Siddiki',
-    email: 'maruf.siddiki@cse.univ.edu',
+    email: '0802420205101034@baust.edu.bd',
     avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=250&q=80',
     role: 'both',
     activeRole: 'learner',
@@ -115,7 +115,7 @@ export const INITIAL_USERS: UserProfile[] = [
   {
     id: 'user-ayesha',
     name: 'Ayesha Rahman',
-    email: 'ayesha.rahman@cse.univ.edu',
+    email: '0802420205101012@baust.edu.bd',
     avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=250&q=80',
     role: 'both',
     activeRole: 'tutor',
@@ -217,7 +217,7 @@ export const INITIAL_USERS: UserProfile[] = [
   {
     id: 'user-tanvir',
     name: 'Tanvir Hasan',
-    email: 'tanvir.hasan@eee.univ.edu',
+    email: '0802520105201025@baust.edu.bd',
     avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=250&q=80',
     role: 'both',
     activeRole: 'tutor',
@@ -286,7 +286,7 @@ export const INITIAL_USERS: UserProfile[] = [
   {
     id: 'user-sadia',
     name: 'Sadia Islam',
-    email: 'sadia.islam@bba.univ.edu',
+    email: '0802520205301045@baust.edu.bd',
     avatar: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=250&q=80',
     role: 'both',
     activeRole: 'tutor',
@@ -356,7 +356,7 @@ export const INITIAL_USERS: UserProfile[] = [
   {
     id: 'user-fahim',
     name: 'Fahim Ahmed',
-    email: 'fahim.ahmed@cse.univ.edu',
+    email: '0802620105101089@baust.edu.bd',
     avatar: 'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?auto=format&fit=crop&w=250&q=80',
     role: 'both',
     activeRole: 'learner',
@@ -395,7 +395,7 @@ export const INITIAL_USERS: UserProfile[] = [
   {
     id: 'user-admin',
     name: 'Dr. Shakil Hasan',
-    email: 'shakil.hasan@univ.edu',
+    email: 'shakil.hasan@baust.edu.bd',
     avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&w=250&q=80',
     role: 'admin',
     activeRole: 'tutor',

@@ -62,3 +62,14 @@ export function getDefaultLevelTermForBatch(batch: string | number | undefined):
       return 'Level 1 / Term II';
   }
 }
+
+/**
+ * Returns BAUST institutional email for a given student ID:
+ * Format: id@baust.edu.bd (e.g. 0802420205101034@baust.edu.bd)
+ */
+export function getEduEmailForStudentId(id: string): string {
+  const clean = id.trim();
+  if (!clean) return '';
+  if (clean.includes('@')) return clean.toLowerCase();
+  return `${clean}@baust.edu.bd`.toLowerCase();
+}

@@ -566,7 +566,7 @@ export const ProfileView: React.FC = () => {
                   Email: <strong className="text-slate-700">{currentUser.email}</strong>
                 </p>
                 <p className="text-[11px] text-slate-500 mt-0.5">
-                  Institutional accounts ending in <code className="text-slate-700">.edu</code> guarantee you are a verified university student.
+                  Institutional accounts ending in <code className="text-slate-700 font-mono">@baust.edu.bd</code> (e.g. <code className="text-slate-700 font-mono">id@baust.edu.bd</code>) guarantee you are a verified BAUST university student.
                 </p>
               </div>
 
