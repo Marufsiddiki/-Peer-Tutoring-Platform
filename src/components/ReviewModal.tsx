@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useApp } from '../context/AppContext';
-import { X, Star, Sparkles, CheckCircle2 } from 'lucide-react';
+import { X, Star, Sparkles, CheckCircle2, AlertTriangle } from 'lucide-react';
 
 export const ReviewModal: React.FC = () => {
   const {
@@ -8,6 +8,7 @@ export const ReviewModal: React.FC = () => {
     setReviewModalOpen,
     reviewSession,
     setReviewSession,
+    currentUser,
     submitReview,
   } = useApp();
 
@@ -17,12 +18,40 @@ export const ReviewModal: React.FC = () => {
 
   if (!reviewModalOpen || !reviewSession) return null;
 
+  // Prevent tutor from reviewing themselves
+  if (reviewSession.tutorId === currentUser.id) {
+    return (
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-xs animate-fadeIn">
+        <div className="bg-white rounded-2xl border border-slate-200 max-w-sm w-full p-6 text-center space-y-3 shadow-2xl">
+          <div className="w-12 h-12 mx-auto rounded-full bg-amber-50 text-amber-600 flex items-center justify-center">
+            <AlertTriangle className="w-6 h-6" />
+          </div>
+          <h3 className="text-base font-bold text-slate-900">Student Feedback Only</h3>
+          <p className="text-xs text-slate-600 leading-relaxed">
+            Tutors cannot leave reviews for their own classes. Student <strong>{reviewSession.learnerName}</strong> must provide the feedback and rating.
+          </p>
+          <button
+            onClick={() => {
+              setReviewModalOpen(false);
+              setReviewSession(null);
+            }}
+            className="w-full py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-lg text-xs transition"
+          >
+            Close
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!comment.trim()) return;
 
     submitReview(reviewSession.id, rating, comment.trim());
     setComment('');
+    setReviewModalOpen(false);
+    setReviewSession(null);
   };
 
   return (

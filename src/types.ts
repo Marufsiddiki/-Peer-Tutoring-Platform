@@ -98,6 +98,7 @@ export interface UserProfile {
   studentId: string; // e.g. BAUST 16-digit ID: "0802620105101089" (22 Batch prefix: 080262010.......)
   bio: string;
   isAdmin?: boolean;
+  isDemo?: boolean; // True only for preset evaluation demo personas, false for user-registered accounts
 
   // Verification & Trust (#19, #20, #27, #36)
   institutionalEmailVerified: boolean;

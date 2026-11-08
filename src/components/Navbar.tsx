@@ -31,6 +31,10 @@ export const Navbar: React.FC = () => {
     setActiveTab,
     toggleActiveRole,
     switchUser,
+    tryDemo,
+    isLoggedIn,
+    logoutUser,
+    setAuthMode,
     setHelpPostModalOpen,
     setAuthModalOpen,
     simulateReminderNotification,
@@ -60,6 +64,58 @@ export const Navbar: React.FC = () => {
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
+
+  // Unauthenticated Header View
+  if (!isLoggedIn) {
+    return (
+      <header className="sticky top-0 z-40 bg-white border-b border-slate-200 shadow-xs">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between min-h-[64px] sm:min-h-[72px] py-2 gap-3">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-teal-600 flex items-center justify-center text-white shadow-xs">
+                <GraduationCap className="w-6 h-6" />
+              </div>
+              <div>
+                <span className="font-bold text-slate-900 text-lg sm:text-xl tracking-tight leading-none block">CampusTutor</span>
+                <span className="text-[11px] text-slate-500 font-medium">BAUST Peer Tutoring Network</span>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2 sm:gap-3">
+              <button
+                onClick={() => tryDemo('learner')}
+                className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-lg bg-teal-50 text-teal-800 border border-teal-200 hover:bg-teal-100 transition shadow-2xs"
+              >
+                <Sparkles className="w-3.5 h-3.5 text-amber-500" />
+                <span>Instant Demo</span>
+              </button>
+              <button
+                onClick={() => {
+                  setAuthMode('login');
+                  setAuthModalOpen(true);
+                }}
+                className="px-3.5 py-1.5 text-xs font-semibold rounded-lg bg-white border border-slate-300 text-slate-700 hover:bg-slate-50 transition shadow-2xs"
+              >
+                Sign In
+              </button>
+              <button
+                onClick={() => {
+                  setAuthMode('register');
+                  setAuthModalOpen(true);
+                }}
+                className="px-3.5 py-1.5 text-xs font-bold rounded-lg bg-teal-600 text-white hover:bg-teal-700 transition shadow-2xs"
+              >
+                Register
+              </button>
+            </div>
+          </div>
+        </div>
+      </header>
+    );
+  }
+
+  const demoUsers = users.filter((u) => u.isDemo);
+  const registeredNonDemoUsers = users.filter((u) => !u.isDemo);
 
   return (
     <header className="sticky top-0 z-40 bg-white border-b border-slate-200 shadow-xs">
@@ -389,13 +445,18 @@ export const Navbar: React.FC = () => {
                     )}
                   </div>
 
-                  {/* Quick Persona Switcher for Evaluation */}
+                  {/* Preset Demo Personas for Evaluation */}
                   <div className="p-2 bg-slate-50/50">
-                    <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider px-2 py-1 flex items-center gap-1">
-                      <SlidersHorizontal className="w-3 h-3" /> Switch Demo Account
+                    <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider px-2 py-1 flex items-center justify-between">
+                      <span className="flex items-center gap-1">
+                        <SlidersHorizontal className="w-3 h-3" /> Preset Demo Personas
+                      </span>
+                      <span className="text-[9px] bg-slate-200/60 text-slate-600 px-1.5 py-0.2 rounded font-mono">
+                        Demo
+                      </span>
                     </div>
-                    <div className="space-y-1 max-h-48 overflow-y-auto pr-1">
-                      {users.map((u) => (
+                    <div className="space-y-1 max-h-36 overflow-y-auto pr-1">
+                      {demoUsers.map((u) => (
                         <button
                           key={u.id}
                           onClick={() => {
@@ -420,16 +481,55 @@ export const Navbar: React.FC = () => {
                     </div>
                   </div>
 
+                  {/* Registered Student Accounts (Non-Demo) */}
+                  {registeredNonDemoUsers.length > 0 && (
+                    <div className="p-2 border-t border-slate-100 bg-teal-50/20">
+                      <div className="text-[10px] font-bold text-teal-700 uppercase tracking-wider px-2 py-1 flex items-center justify-between">
+                        <span>Registered Student Accounts</span>
+                        <span className="text-[9px] bg-teal-100 text-teal-800 px-1.5 py-0.2 rounded font-mono">
+                          Live ({registeredNonDemoUsers.length})
+                        </span>
+                      </div>
+                      <div className="space-y-1 max-h-32 overflow-y-auto pr-1">
+                        {registeredNonDemoUsers.map((u) => (
+                          <button
+                            key={u.id}
+                            onClick={() => {
+                              switchUser(u.id);
+                              setUserMenuOpen(false);
+                            }}
+                            className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-left text-xs transition ${
+                              u.id === currentUser.id
+                                ? 'bg-teal-100/60 text-teal-900 font-bold border border-teal-300'
+                                : 'text-slate-700 hover:bg-white'
+                            }`}
+                          >
+                            <div className="flex items-center gap-2 min-w-0 flex-1">
+                              <img src={u.avatar} alt={u.name} className="w-5 h-5 rounded-md object-cover shrink-0" />
+                              <div className="min-w-0 truncate">
+                                <div className="truncate font-semibold">{u.name}</div>
+                                <div className="text-[9px] text-slate-400 font-mono truncate">{u.studentId}</div>
+                              </div>
+                            </div>
+                            <span className="text-[10px] text-teal-700 font-mono shrink-0 ml-1 font-semibold">
+                              {u.batch}
+                            </span>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
                   <div className="p-1.5 border-t border-slate-100 sticky bottom-0 bg-white">
                     <button
                       onClick={() => {
-                        setAuthModalOpen(true);
+                        logoutUser();
                         setUserMenuOpen(false);
                       }}
-                      className="w-full flex items-center gap-2 px-3 py-2 text-xs text-rose-600 hover:bg-rose-50 rounded-lg transition"
+                      className="w-full flex items-center gap-2 px-3 py-2 text-xs font-bold text-rose-600 hover:bg-rose-50 rounded-lg transition"
                     >
                       <LogOut className="w-4 h-4 shrink-0" />
-                      <span className="truncate">Log in / Register / Guest Demo</span>
+                      <span className="truncate">Log Out of Account</span>
                     </button>
                   </div>
                 </div>

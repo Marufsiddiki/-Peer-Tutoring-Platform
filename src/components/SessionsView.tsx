@@ -211,6 +211,7 @@ export const SessionsView: React.FC = () => {
         <div className="space-y-4">
           {displayedSessions.map((sess) => {
             const isUserLearner = sess.learnerId === currentUser.id;
+            const isUserTutor = sess.tutorId === currentUser.id;
             const partnerName = isUserLearner ? sess.tutorName : sess.learnerName;
             const partnerAvatar = isUserLearner ? sess.tutorAvatar : sess.learnerAvatar;
             const partnerId = isUserLearner ? sess.tutorId : sess.learnerId;
@@ -340,25 +341,42 @@ export const SessionsView: React.FC = () => {
                   <div className="flex flex-col sm:items-end justify-center gap-2 shrink-0 pt-3 md:pt-0 border-t md:border-t-0 border-slate-100">
                     {sess.status === 'pending_confirmation' && (
                       <div className="flex flex-col sm:items-end gap-2 w-full sm:w-auto">
-                        <span className="text-[11px] text-amber-800 font-semibold flex items-center gap-1">
-                          <Clock className="w-3.5 h-3.5 text-amber-600" />
-                          {isUserLearner ? 'Awaiting Tutor Confirmation (Step 8)' : 'Student Booking Request Received'}
-                        </span>
-                        <div className="flex items-center gap-1.5 flex-wrap">
-                          <button
-                            onClick={() => confirmBooking(sess.id)}
-                            className="px-3.5 py-1.5 text-xs font-bold bg-emerald-600 text-white hover:bg-emerald-700 rounded-lg shadow-2xs transition flex items-center gap-1"
-                          >
-                            <CheckCircle className="w-3.5 h-3.5" />
-                            <span>Confirm Session (Step 9)</span>
-                          </button>
-                          <button
-                            onClick={() => declineBooking(sess.id, 'Schedule conflict')}
-                            className="px-2.5 py-1.5 text-xs font-medium text-slate-600 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 rounded-lg transition"
-                          >
-                            Decline
-                          </button>
-                        </div>
+                        {isUserTutor ? (
+                          <>
+                            <span className="text-[11px] text-amber-800 font-semibold flex items-center gap-1">
+                              <Clock className="w-3.5 h-3.5 text-amber-600" />
+                              Student Booking Request Received from {sess.learnerName}
+                            </span>
+                            <div className="flex items-center gap-1.5 flex-wrap">
+                              <button
+                                onClick={() => confirmBooking(sess.id)}
+                                className="px-3.5 py-1.5 text-xs font-bold bg-emerald-600 text-white hover:bg-emerald-700 rounded-lg shadow-2xs transition flex items-center gap-1 cursor-pointer"
+                              >
+                                <CheckCircle className="w-3.5 h-3.5" />
+                                <span>Accept & Confirm Session</span>
+                              </button>
+                              <button
+                                onClick={() => declineBooking(sess.id, 'Schedule conflict')}
+                                className="px-2.5 py-1.5 text-xs font-medium text-slate-600 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 rounded-lg transition cursor-pointer"
+                              >
+                                Decline
+                              </button>
+                            </div>
+                          </>
+                        ) : (
+                          <>
+                            <span className="text-[11px] text-amber-800 font-semibold flex items-center gap-1 bg-amber-50 px-2.5 py-1 rounded-md border border-amber-200">
+                              <Clock className="w-3.5 h-3.5 text-amber-600 animate-pulse" />
+                              Awaiting Tutor Confirmation ({sess.tutorName} must accept)
+                            </span>
+                            <button
+                              onClick={() => cancelSession(sess.id, 'Student cancelled pending request')}
+                              className="px-2.5 py-1 text-xs text-rose-600 hover:text-rose-800 hover:bg-rose-50 border border-rose-200 rounded-lg transition"
+                            >
+                              Cancel Request
+                            </button>
+                          </>
+                        )}
                       </div>
                     )}
                     {sess.status === 'upcoming' && (
@@ -419,20 +437,28 @@ export const SessionsView: React.FC = () => {
                           +{sess.pointsAwarded || (sess.paymentType === 'free' ? 50 : 25)} Reward Points Logged (#33)
                         </div>
 
+                        {/* Only student (learner) can submit feedback/rating for the tutor */}
                         {!sess.hasReview ? (
-                          <button
-                            onClick={() => {
-                              setReviewSession(sess);
-                              setReviewModalOpen(true);
-                            }}
-                            className="mt-1 px-3 py-1.5 text-xs font-semibold bg-amber-50 text-amber-800 border border-amber-300 hover:bg-amber-100 rounded-lg transition flex items-center gap-1"
-                          >
-                            <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
-                            <span>Leave Rating & Review (#34)</span>
-                          </button>
+                          isUserLearner ? (
+                            <button
+                              onClick={() => {
+                                setReviewSession(sess);
+                                setReviewModalOpen(true);
+                              }}
+                              className="mt-1 px-3 py-1.5 text-xs font-semibold bg-amber-50 text-amber-800 border border-amber-300 hover:bg-amber-100 rounded-lg transition flex items-center gap-1 cursor-pointer"
+                            >
+                              <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
+                              <span>Leave Rating & Review for Tutor</span>
+                            </button>
+                          ) : (
+                            <span className="text-[11px] text-slate-400 font-medium italic mt-1">
+                              Awaiting Student Rating & Feedback
+                            </span>
+                          )
                         ) : (
-                          <span className="text-[11px] text-slate-400 font-medium">
-                            ✓ Rating & Written Review Submitted (#34)
+                          <span className="text-[11px] text-emerald-700 font-medium flex items-center gap-1 mt-1">
+                            <CheckCircle className="w-3 h-3 text-emerald-600" />
+                            {isUserLearner ? 'Your Review & Rating Submitted' : 'Student Review & Rating Received'}
                           </span>
                         )}
                       </div>

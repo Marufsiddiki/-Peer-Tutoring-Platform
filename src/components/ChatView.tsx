@@ -680,24 +680,32 @@ export const ChatView: React.FC = () => {
                                 <div className="flex items-center justify-between">
                                   <span className="text-[11px] font-medium text-amber-200 flex items-center gap-1">
                                     <Clock className="w-3.5 h-3.5 animate-pulse" />
-                                    Request Forwarded to Booking System & Tutor (Step 8)
+                                    {activeThread.tutorId === currentUser.id
+                                      ? 'Student Request Received (Step 8): Awaiting Your Confirmation'
+                                      : `Booking Request Sent: Waiting for ${activeThread.tutorName} to accept`}
                                   </span>
                                 </div>
-                                <div className="flex items-center gap-2 flex-wrap pt-1">
-                                  <button
-                                    onClick={() => confirmBooking(details.sessionId || linkedSession?.id || '')}
-                                    className="px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-500 hover:bg-emerald-600 text-white shadow-xs transition flex items-center gap-1"
-                                  >
-                                    <Check className="w-3.5 h-3.5" />
-                                    <span>Confirm Session (Step 9)</span>
-                                  </button>
-                                  <button
-                                    onClick={() => declineBooking(details.sessionId || linkedSession?.id || '', 'Schedule conflict')}
-                                    className="px-3 py-1.5 rounded-lg text-xs font-medium bg-white/20 hover:bg-white/30 text-white transition"
-                                  >
-                                    Decline
-                                  </button>
-                                </div>
+                                {activeThread.tutorId === currentUser.id ? (
+                                  <div className="flex items-center gap-2 flex-wrap pt-1">
+                                    <button
+                                      onClick={() => confirmBooking(details.sessionId || linkedSession?.id || '')}
+                                      className="px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-500 hover:bg-emerald-600 text-white shadow-xs transition flex items-center gap-1 cursor-pointer"
+                                    >
+                                      <Check className="w-3.5 h-3.5" />
+                                      <span>Accept & Confirm Session</span>
+                                    </button>
+                                    <button
+                                      onClick={() => declineBooking(details.sessionId || linkedSession?.id || '', 'Schedule conflict')}
+                                      className="px-3 py-1.5 rounded-lg text-xs font-medium bg-white/20 hover:bg-white/30 text-white transition cursor-pointer"
+                                    >
+                                      Decline
+                                    </button>
+                                  </div>
+                                ) : (
+                                  <p className="text-[11px] text-amber-100/75 italic pt-0.5">
+                                    Your tutor has been notified and must confirm before the session is scheduled.
+                                  </p>
+                                )}
                               </div>
                             )}
 

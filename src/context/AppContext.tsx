@@ -96,6 +96,9 @@ interface AppContextType {
   pointHistoryModalOpen: boolean; // #33
   setPointHistoryModalOpen: (open: boolean) => void;
 
+  isLoggedIn: boolean;
+  setIsLoggedIn: (val: boolean) => void;
+
   // Actions
   toggleActiveRole: () => void;
   switchUser: (userId: string) => void;
@@ -226,6 +229,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     return localStorage.getItem('campustutor_current_user_id') || 'user-maruf';
   });
 
+  const [isLoggedIn, setIsLoggedIn] = useState<boolean>(() => {
+    return localStorage.getItem('campustutor_is_logged_in') !== 'false';
+  });
+
   const [helpPosts, setHelpPosts] = useState<HelpPost[]>(() => {
     const saved = localStorage.getItem('campustutor_posts_v5');
     return saved ? JSON.parse(saved) : INITIAL_HELP_POSTS;
@@ -327,6 +334,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     const found = users.find((u) => u.id === userId);
     if (found) {
       setCurrentUserId(userId);
+      setIsLoggedIn(true);
+      localStorage.setItem('campustutor_is_logged_in', 'true');
       if (found.isAdmin) {
         setActiveTab('admin');
       } else if (activeTab === 'admin') {
@@ -338,6 +347,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const tryDemo = (role: ActiveRole = 'learner') => {
     const demoUser = users.find((u) => u.id === 'user-maruf') || users[0];
     setCurrentUserId(demoUser.id);
+    setIsLoggedIn(true);
+    localStorage.setItem('campustutor_is_logged_in', 'true');
     setUsers((prev) =>
       prev.map((u) => (u.id === demoUser.id ? { ...u, activeRole: role } : u))
     );
@@ -356,6 +367,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     );
     if (found) {
       setCurrentUserId(found.id);
+      setIsLoggedIn(true);
+      localStorage.setItem('campustutor_is_logged_in', 'true');
       setAuthModalOpen(false);
       if (found.isAdmin) {
         setActiveTab('admin');
@@ -364,8 +377,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       }
       return true;
     }
-    tryDemo('learner');
-    return true;
+    return false;
   };
 
   const registerUser = (formData: {
@@ -400,6 +412,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       studentId: finalStudentId,
       bio: formData.bio || 'Eager university student seeking to learn and collaborate with fellow peers.',
       isAdmin: false,
+      isDemo: false, // Explicitly separate from preset demo personas
       institutionalEmailVerified: finalEmail.endsWith('@baust.edu.bd') || finalEmail.endsWith('.edu') || finalEmail.includes('univ'),
       studentIdVerification: 'pending',
       strikes: 0,
@@ -428,7 +441,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
     setUsers((prev) => [newUser, ...prev]);
     setCurrentUserId(newUser.id);
+    setIsLoggedIn(true);
+    localStorage.setItem('campustutor_is_logged_in', 'true');
     setAuthModalOpen(false);
+    setActiveTab('dashboard');
 
     // Initial welcome transaction (#33)
     const welcomeTx: PointTransaction = {
@@ -455,8 +471,12 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   const logoutUser = () => {
+    setIsLoggedIn(false);
+    localStorage.setItem('campustutor_is_logged_in', 'false');
+    setCurrentUserId('');
     setAuthMode('login');
     setAuthModalOpen(true);
+    setActiveTab('dashboard');
   };
 
   const updateProfile = (data: Partial<UserProfile>) => {
@@ -907,6 +927,12 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const confirmBooking = (sessionId: string) => {
     const targetSession = sessions.find((s) => s.id === sessionId);
     if (!targetSession) return;
+
+    // Student cannot accept their own booking request; only the designated tutor or admin can confirm
+    if (targetSession.tutorId !== currentUser.id && !currentUser.isAdmin) {
+      console.warn('Only the assigned tutor can accept/confirm the session booking request');
+      return;
+    }
 
     setSessions((prev) =>
       prev.map((s) => (s.id === sessionId ? { ...s, status: 'upcoming', reminderSent: true } : s))
@@ -1366,6 +1392,12 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     const sess = sessions.find((s) => s.id === sessionId);
     if (!sess) return;
 
+    // Student provides feedback for tutor; tutor cannot review themselves
+    if (sess.tutorId === currentUser.id) {
+      console.warn('Tutors cannot review their own tutoring session. Student feedback only.');
+      return;
+    }
+
     const newReview: UserReview = {
       id: `rev-${Date.now()}`,
       reviewId: `rev-${Date.now()}`,
@@ -1628,6 +1660,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         setVideoToPlay,
         pointHistoryModalOpen,
         setPointHistoryModalOpen,
+        isLoggedIn,
+        setIsLoggedIn,
         toggleActiveRole,
         switchUser,
         tryDemo,

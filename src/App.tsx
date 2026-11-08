@@ -9,6 +9,7 @@ import { ChatView } from './components/ChatView';
 import { LeaderboardView } from './components/LeaderboardView';
 import { ProfileView } from './components/ProfileView';
 import { AdminView } from './components/AdminView';
+import { AuthView } from './components/AuthView';
 
 // Modals
 import { TutorPortfolioModal } from './components/TutorPortfolioModal';
@@ -22,7 +23,7 @@ import { VideoPlayerModal } from './components/VideoPlayerModal';
 import { PointHistoryModal } from './components/PointHistoryModal';
 
 const AppContent: React.FC = () => {
-  const { activeTab, setActiveTab, currentUser, tryDemo } = useApp();
+  const { activeTab, setActiveTab, currentUser, tryDemo, isLoggedIn } = useApp();
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 flex flex-col font-sans selection:bg-teal-100 selection:text-teal-900">
@@ -31,14 +32,20 @@ const AppContent: React.FC = () => {
 
       {/* Main App Content View */}
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
-        {activeTab === 'dashboard' && <DashboardView />}
-        {activeTab === 'tutors' && <FindTutorsView />}
-        {activeTab === 'help-posts' && <HelpPostsView />}
-        {activeTab === 'sessions' && <SessionsView />}
-        {activeTab === 'messages' && <ChatView />}
-        {activeTab === 'leaderboard' && <LeaderboardView />}
-        {activeTab === 'profile' && <ProfileView />}
-        {activeTab === 'admin' && <AdminView />}
+        {!isLoggedIn ? (
+          <AuthView />
+        ) : (
+          <>
+            {activeTab === 'dashboard' && <DashboardView />}
+            {activeTab === 'tutors' && <FindTutorsView />}
+            {activeTab === 'help-posts' && <HelpPostsView />}
+            {activeTab === 'sessions' && <SessionsView />}
+            {activeTab === 'messages' && <ChatView />}
+            {activeTab === 'leaderboard' && <LeaderboardView />}
+            {activeTab === 'profile' && <ProfileView />}
+            {activeTab === 'admin' && <AdminView />}
+          </>
+        )}
       </main>
 
       {/* University Platform Footer */}
