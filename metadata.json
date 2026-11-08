@@ -1,0 +1,8 @@
+{
+  "name": "Remix Remix CampusTutor - University Peer Tutoring Platform",
+  "description": "University peer tutoring platform connecting student learners and tutors with smart course matching, verified credentials, pre-booking negotiations, and strike-protected session management.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
